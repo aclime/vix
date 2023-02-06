@@ -7,7 +7,7 @@ from scipy import stats
 norm = stats.norm
 
 class BSOPM_Class:
-  
+ 
   def disc_function(self, FV, r, T):
     PV = FV * np.exp(-r*T)
     return PV
@@ -15,7 +15,7 @@ class BSOPM_Class:
   def bs_d1_d2(self,St,r,t,K,call,sig):
     d1 = np.log(St/K)
     d1 += ( sig*sig/2 + r)*t
-    with np.errstate(divide='ignore'):
+    with np.errstate(divide='ignore',invalid='ignore'):
         d1/=sig * t**0.5
     d2=d1-sig * t**0.5
     return d1,d2
@@ -34,7 +34,7 @@ class BSOPM_Class:
 
   def bs_gamma(self,d1,St,sig,t):
     gamma = norm.pdf(d1)
-    with np.errstate(divide='ignore'):
+    with np.errstate(divide='ignore',invalid='ignore'):
         gamma /= (St*sig*np.sqrt(t)) 
     return gamma
 
@@ -44,6 +44,8 @@ class BSOPM_Class:
       price = St*Nd1-pvk*Nd2
     else:
       price = pvk * Nd2 - St * Nd1 
+    if (abs(St-pvk)<=0.0000000000001)and(T-t<=0.0000000000001):
+      price= 0 #expires at-the-money aka worthless
     return price
   
   def opt_payoff(self, ST, K, call=True):
